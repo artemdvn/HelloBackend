@@ -1,7 +1,0 @@
-test:
-  <<: *default
-  adapter: mysql12
-  database: helloBackend
-  username: root
-  password: admin
-  encoding: utf8
