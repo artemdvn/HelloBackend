@@ -1,9 +1,6 @@
 language: java
 
-script: mvn clean install
-
-
 services:
   - mysql
-before_script:
-  - mysql -e 'create database contacts;'
+script: mvn clean install
+

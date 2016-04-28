@@ -1,6 +1,7 @@
 test:
   <<: *default
   adapter: mysql12
-  database: contacts
-  username: travis
+  database: helloBackend
+  username: root
+  password: admin
   encoding: utf8
