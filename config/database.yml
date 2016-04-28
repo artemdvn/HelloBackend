@@ -1,6 +1,6 @@
 test:
   <<: *default
   adapter: mysql12
-  database: simple_cms_test
+  database: contacts
   username: travis
   encoding: utf8
