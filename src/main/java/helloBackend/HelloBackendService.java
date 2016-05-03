@@ -24,12 +24,12 @@ public class HelloBackendService
 			throw new WebApplicationException(
 					Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity("name parameter is mandatory").build());
 		}
+		List<Contact> contacts = new ArrayList<Contact>();
 		try {
-			List<Contact> contacts = ManagementSystem.getInstance().getFilteredContacts(val);
-			return contacts;
+			contacts = ManagementSystem.getInstance().getFilteredContacts(val, null);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		return new ArrayList<Contact>();
+		return contacts;
     }
 }

@@ -17,54 +17,63 @@ import javax.sql.DataSource;
 
 public class ManagementSystem {
 
-    private static Connection con;
-    private static ManagementSystem instance;
-    private static DataSource dataSource;
-    
-    private ManagementSystem() {
-    }
+	private static ManagementSystem instance;
 
-    public static synchronized ManagementSystem getInstance() {
-        if (instance == null) {
-        	try {
-                instance = new ManagementSystem();
-                Context ctx = new InitialContext();
-                dataSource = (DataSource) ctx.lookup("java:comp/env/jdbc/ContactsDS");
-                con = dataSource.getConnection();  
-        	} catch (NamingException e) {
-                e.printStackTrace();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-        return instance;
-    }
-    
-    public List<Contact> getFilteredContacts(String regex) throws SQLException {
-        List<Contact> contacts = new ArrayList<Contact>();
-        Statement stmt = con.createStatement();
-        ResultSet rs = stmt.executeQuery("SELECT id, name FROM contacts");
+	private ManagementSystem() {
+	}
 
-        Pattern p = Pattern.compile("");
-        try {
-        	p = Pattern.compile(regex); 
-        } catch (PatternSyntaxException e) {
-            e.printStackTrace();
-        }
-               
-		while (rs.next()) {
-			String contactString = rs.getString(2);
-			Matcher m = p.matcher(contactString);
-			if (!m.matches()) {
-				Contact sr = new Contact();
-				sr.setId(rs.getInt(1));
-				sr.setName(contactString);
-				contacts.add(sr);
+	public static synchronized ManagementSystem getInstance() {
+		if (instance == null) {
+			instance = new ManagementSystem();
+		}
+		return instance;
+	}
+
+	public List<Contact> getFilteredContacts(String regex, Connection DBConnection) throws SQLException {
+
+		Pattern p = Pattern.compile("");
+		try {
+			p = Pattern.compile(regex);
+		} catch (PatternSyntaxException e) {
+			e.printStackTrace();
+		}
+
+		if (DBConnection == null) {
+			try {
+				Context ctx = new InitialContext();
+				DataSource dataSource = (DataSource) ctx.lookup("java:comp/env/jdbc/ContactsDS");
+				DBConnection = dataSource.getConnection();
+			} catch (NamingException e) {
+				e.printStackTrace();
 			}
 		}
-		rs.close();
-		stmt.close();
+
+		List<Contact> contacts = new ArrayList<Contact>();
+		Statement stmt = null;
+		ResultSet rs = null;
+		try {
+			stmt = DBConnection.createStatement();
+			stmt.setFetchSize(1);
+			rs = stmt.executeQuery("SELECT id, name FROM contacts");
+
+			while (rs.next()) {
+				String contactString = rs.getString(2);
+				Matcher m = p.matcher(contactString);
+				if (!m.matches()) {
+					Contact sr = new Contact();
+					sr.setId(rs.getInt(1));
+					sr.setName(contactString);
+					contacts.add(sr);
+				}
+			}
+		} finally {
+			if (rs != null) {
+				rs.close();
+			}
+			if (stmt != null) {
+				stmt.close();
+			}
+		}
 		return contacts;
-    }  
-   
+	}
 }
